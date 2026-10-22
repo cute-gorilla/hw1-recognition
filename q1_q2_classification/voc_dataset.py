@@ -72,6 +72,15 @@ class VOCDataset(Dataset):
             # The difficult attribute specifies whether a class is ambiguous and by setting its weight to zero it does not contribute to the loss during training 
             weight_vec = torch.ones(20)
 
+            for obj in tree.findall('object'):
+                name = obj.find('name').text
+                idx = self.get_class_index(name)
+                class_vec[idx] = 1
+
+                dif = int(obj.find('difficult').text)
+                if dif == 1:
+                    weight_vec[idx] = 0
+
             ######################################################################
             #                            END OF YOUR CODE                        #
             ######################################################################
@@ -92,7 +101,12 @@ class VOCDataset(Dataset):
         # change and you will have to write the correct value of `flat_dim`
         # in line 46 in simple_cnn.py
         ######################################################################
-        pass
+        flag = False
+        if flag and self.split in ('train', 'trainval'):
+            return [transforms.RandomResizedCrop(size=(self.size, self.size), antialias=True),
+                    transforms.RandomHorizontalFlip(p=0.5),
+                    transforms.RandomRotation(degrees=30)]
+        return []
         ######################################################################
         #                            END OF YOUR CODE                        #
         ######################################################################
